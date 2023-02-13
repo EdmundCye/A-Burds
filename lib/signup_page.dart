@@ -1,7 +1,11 @@
 // ignore_for_file: prefer_const_constructors
 // ignore_for_file: prefer_const_literals_to_create_immutables
 // ignore_for_file: avoid_unnecessary_containers
+import 'dart:async';
 import 'dart:convert';
+import 'package:auth/auth.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'signup_collector_page.dart';
 import 'package:crypto/crypto.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -13,10 +17,14 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:flutter/services.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class SignUpPage extends StatelessWidget {
   final CollectionReference _users =
       FirebaseFirestore.instance.collection('users');
+
+  FirebaseFirestore db = FirebaseFirestore.instance;
+
   final TextEditingController phoneController = TextEditingController();
   final TextEditingController nameController = TextEditingController();
   final TextEditingController emailController = TextEditingController();
@@ -34,7 +42,7 @@ class SignUpPage extends StatelessWidget {
     );
     return Scaffold(
         backgroundColor: Colors.white,
-        resizeToAvoidBottomInset: true,
+        resizeToAvoidBottomInset: false,
         body: Column(
           children: [
             Container(
@@ -248,9 +256,6 @@ class SignUpPage extends StatelessWidget {
             ),
             GestureDetector(
               onTap: () {
-                AuthController.instance.register(emailController.text.trim(),
-                    passwordController.text.trim());
-
                 // First encode to UTF8 format
                 var bytes = utf8.encode(passwordController.text);
                 // Convert to SHA format
@@ -261,16 +266,18 @@ class SignUpPage extends StatelessWidget {
                 final String password = sha512.toString();
                 final String phoneNum = phoneController.text.trim();
 
-                if (passwordController.text.trim().length >= 6 &&
-                    emailController.text != '') {
-                  _users.add({
-                    "full name": name,
-                    "email": email,
-                    "password": password,
-                    "phone number": phoneNum
-                  });
-                  //Navigator.of(context).pop();
-                }
+                AuthController.instance.register(emailController.text.trim(),
+                    passwordController.text.trim());
+
+                final info = <String, String>{
+                  "full name": name,
+                  "email": email,
+                  "password": password,
+                  "phone number": phoneNum
+                };
+
+                db.collection('users').doc(email).set(info);
+                //Navigator.of(context).pop();
               },
               child: Container(
                 width: w * 0.5,

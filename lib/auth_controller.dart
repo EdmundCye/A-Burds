@@ -1,7 +1,8 @@
 // ignore_for_file: prefer_const_constructors
 import 'dart:async';
-
-import 'welcome_page.dart';
+import 'package:app/signup_collector_page.dart';
+import 'package:app/signup_page.dart';
+import 'package:app/status_user_page.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -30,10 +31,9 @@ class AuthController extends GetxController {
 
   _initialScreen(User? user) {
     if (user == null) {
-      print("login page");
-      Get.offAll(() => LoginPage());
+      Get.offAll(() => SignUpPage());
     } else {
-      Get.offAll(() => WelcomePage(email: user.email!));
+      Get.offAll(() => LoginPage());
     }
   }
 
@@ -41,6 +41,8 @@ class AuthController extends GetxController {
     try {
       await auth.createUserWithEmailAndPassword(
           email: email, password: password);
+
+      Get.offAll(statusUserPage());
     } catch (e) {
       Get.snackbar("About User", "User message",
           backgroundColor: Colors.redAccent,
@@ -59,6 +61,7 @@ class AuthController extends GetxController {
   Future login(String email, password) async {
     try {
       await auth.signInWithEmailAndPassword(email: email, password: password);
+      Get.offAll(statusUserPage());
     } catch (e) {
       Get.snackbar("About Login", "Login message",
           backgroundColor: Colors.redAccent,
